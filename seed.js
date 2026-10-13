@@ -335,7 +335,7 @@ function seed({ teams = 36, adminPass, judgeUser = 'judge', judgePass, updatePas
   // never persisted (older builds stored bootstrap passwords in the settings
   // table in plaintext; those rows are purged below).
   const adminUser = 'admin';
-  const hasAdmin = db.prepare('SELECT id FROM accounts WHERE username = ?').get(adminUser);
+  const hasAdmin = db.prepare('SELECT id, password_hash FROM accounts WHERE username = ?').get(adminUser);
   const finalAdminPass = adminPass || 'admin123';
   if (!hasAdmin) {
     db.prepare('INSERT INTO accounts (username, password_hash, role) VALUES (?, ?, ?)')
@@ -343,12 +343,14 @@ function seed({ teams = 36, adminPass, judgeUser = 'judge', judgePass, updatePas
     if (!adminPass) {
       console.warn('WARNING: admin account created with the DEFAULT password. Set the ADMIN_PASSWORD env var (or run: node seed.js --admin-pass <pw>) before the event.');
     }
-  } else if (adminPass && updatePasswords) {
-    db.prepare('UPDATE accounts SET password_hash = ? WHERE username = ?')
-      .run(hashPassword(adminPass), adminUser);
+  } else if (adminPass) {
+    if (updatePasswords || !verifyPassword(adminPass, hasAdmin.password_hash)) {
+      db.prepare('UPDATE accounts SET password_hash = ? WHERE username = ?')
+        .run(hashPassword(adminPass), adminUser);
+    }
   }
 
-  const hasJudge = db.prepare('SELECT id FROM accounts WHERE username = ?').get(judgeUser);
+  const hasJudge = db.prepare('SELECT id, password_hash FROM accounts WHERE username = ?').get(judgeUser);
   const finalJudgePass = judgePass || 'judge123';
   if (!hasJudge) {
     db.prepare('INSERT INTO accounts (username, password_hash, role) VALUES (?, ?, ?)')
@@ -356,9 +358,11 @@ function seed({ teams = 36, adminPass, judgeUser = 'judge', judgePass, updatePas
     if (!judgePass) {
       console.warn('WARNING: judge account created with the DEFAULT password. Set the JUDGE_PASSWORD env var (or run: node seed.js --judge-pass <pw>) before the event.');
     }
-  } else if (judgePass && updatePasswords) {
-    db.prepare('UPDATE accounts SET password_hash = ? WHERE username = ?')
-      .run(hashPassword(judgePass), judgeUser);
+  } else if (judgePass) {
+    if (updatePasswords || !verifyPassword(judgePass, hasJudge.password_hash)) {
+      db.prepare('UPDATE accounts SET password_hash = ? WHERE username = ?')
+        .run(hashPassword(judgePass), judgeUser);
+    }
   }
 
   // Security hygiene: purge plaintext bootstrap passwords persisted by older builds.
