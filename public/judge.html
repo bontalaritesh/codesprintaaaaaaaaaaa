@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>CODE SPRINT — Judge Dashboard</title>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="/css/main.css">
 </head>
 <body>
@@ -51,12 +52,12 @@
           <span class="muted small" id="timer-state-msg">Waiting for host to start</span>
         </div>
         <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">
-          <button class="btn btn-primary" id="timer-start" type="button" disabled>▶ Start</button>
-          <button class="btn" id="timer-pause" type="button" disabled>⏸ Pause</button>
-          <button class="btn" id="timer-resume" type="button" disabled>▶ Resume</button>
-          <button class="btn" id="timer-stop" type="button" disabled>⏹ Stop</button>
-          <button class="btn" id="timer-reset" type="button" disabled>↺ Reset</button>
-          <button class="btn btn-danger" id="timer-end" type="button" disabled>■ End round</button>
+          <button class="btn btn-primary" id="timer-start" type="button" disabled>Start</button>
+          <button class="btn" id="timer-pause" type="button" disabled>Pause</button>
+          <button class="btn" id="timer-resume" type="button" disabled>Resume</button>
+          <button class="btn" id="timer-stop" type="button" disabled>Stop</button>
+          <button class="btn" id="timer-reset" type="button" disabled>Reset</button>
+          <button class="btn btn-danger" id="timer-end" type="button" disabled>End round</button>
         </div>
         <div class="muted small" style="margin-top:10px">Last action: <span id="timer-last-action" class="mono">—</span> · <span id="timer-last-actor">—</span> · state version <span id="timer-version" class="mono">—</span> · <span id="timer-sync">synced</span></div>
       </div>
@@ -74,10 +75,10 @@
         <h3>Quick Start</h3>
         <p class="muted small">Start the whole competition at any time — Round 1 opens immediately (or after a delay), lunch and later rounds are scheduled automatically. Use “Hold” to pause everything back to <strong>Not Started</strong> (all rounds lock; nothing is deleted).</p>
         <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:6px">
-          <button class="btn btn-primary" id="qs-now" type="button">▶ Start now</button>
+          <button class="btn btn-primary" id="qs-now" type="button">Start now</button>
           <button class="btn" id="qs-5" type="button">Start in 5 min</button>
           <button class="btn" id="qs-15" type="button">Start in 15 min</button>
-          <button class="btn btn-danger" id="hold-btn" type="button">⏸ Hold / postpone</button>
+          <button class="btn btn-danger" id="hold-btn" type="button">Hold / postpone</button>
         </div>
       </div>
       <div class="card" style="margin-top:20px">
@@ -108,7 +109,7 @@
 
     <section class="section">
       <div class="section-head"><h2>Teams</h2><input id="team-filter" placeholder="Filter…" style="max-width:220px"></div>
-      <div style="overflow-x:auto">
+      <div class="table-wrap">
         <table id="teams-table">
           <thead><tr><th>Rank</th><th>Team</th><th>Team ID</th><th class="num">Score</th><th class="num">Hints</th><th class="num">Tab Switches</th><th>Status</th><th>Actions</th></tr></thead>
           <tbody></tbody>
@@ -134,7 +135,7 @@
 
     <section class="section">
       <div class="section-head"><h2>Recent Submissions</h2></div>
-      <div style="overflow-x:auto">
+      <div class="table-wrap">
         <table id="subs-table">
           <thead><tr><th>Time</th><th>Team</th><th>Question</th><th>Result</th><th class="num">Marks</th><th></th></tr></thead>
           <tbody></tbody>
@@ -164,7 +165,7 @@
 
     <section class="section">
       <div class="section-head"><h2>Audit Log</h2></div>
-      <div style="overflow-x:auto">
+      <div class="table-wrap">
         <table id="audit-table">
           <thead><tr><th>Time</th><th>Actor</th><th>Action</th><th>Detail</th></tr></thead>
           <tbody></tbody>

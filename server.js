@@ -946,6 +946,9 @@ app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
+// Favicon: browsers request /favicon.ico by default; serve the SVG there too.
+app.get('/favicon.ico', (req, res) => res.sendFile(path.join(__dirname, 'public', 'favicon.svg')));
+
 app.use(express.static(path.join(__dirname, 'public'), { index: 'index.html' }));
 
 // Clean URLs matching the login redirects.
