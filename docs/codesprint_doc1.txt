@@ -1,0 +1,243 @@
+CODE SPRINT
+1. Website Purpose
+Team login
+Team dashboard
+Questions
+Round progression
+Timer
+Code submission
+Test results
+Scoring
+Hints
+Live leaderboard
+Judge/Admin dashboard
+Final results
+The website should give participants a game-like competitive experience while allowing judges to monitor and manage all teams.
+2. Login Page
+Each participating team will have a unique account.
+Login fields
+Team ID
+Password
+Login button
+Competition status
+The login page should also display the competition status:
+Not Started
+Started / Live
+Finished
+Only registered teams should be allowed to access the competition.
+3. Team Dashboard
+After login, the team will be taken to its dashboard. The dashboard should display:
+Team Name
+Team ID
+Current Score
+Current Rank
+Remaining Time
+Current Round
+Overall Progress
+Competition Journey
+The dashboard should visually show:
+🔐 The Gate → 🌀 The Maze → 🔮 The Cipher → ⚔️ Code Arena → 🐛 Debug Lab
+Each stage should have a status:
+Locked
+Active
+Completed
+This allows teams to immediately understand where they are in the competition.
+4. Round 1 — Logic Quest
+NOTE: 15 Questions manually inserted
+Duration: 2 Hours
+Round 1 contains three levels:
+Level 1 — The Gate
+Opening logic challenge.
+Level 2 — The Maze
+Progressive logic/problem-solving challenge.
+Level 3 — The Cipher
+Final logic/cipher challenge of Round 1.
+At 12:00 PM, Round 1 should automatically lock.
+Teams should no longer be able to submit answers after the round closes.
+5. Lunch Lock
+Duration: 12:00 PM – 1:00 PM
+During lunch:
+Questions are locked.
+Submissions are disabled.
+Round 2 remains locked.
+Website displays a lunch/countdown screen.
+The countdown should show the remaining time until Round 2 starts.
+At 1:00 PM, Code Arena should automatically unlock.
+6. Round 2 — Code Arena
+NOTE: 20Q Questions manually inserted [CODE SNIPPETS]
+Duration: 2 Hours
+Code Arena contains five sections:
+Predict — 30 Marks
+Teams predict the output/ behaviour of given code.
+Fix It — 30 Marks
+Teams identify and correct errors in existing code.
+Complete It — 30 Marks
+Teams complete partially written programs.
+Solve — 30 Marks
+Teams solve standard programming problems.
+Challenge — 20 Marks
+Higher-difficulty programming problems.
+Total shown in the current design: 140 marks.
+BONUS ROUND: 6Q = EXTRA MARKS
+7. Question Page Structure
+Every question should have a common question-page structure.
+Question information
+Question title
+Problem statement
+Input
+Output
+Constraints
+Examples
+Coding interface
+Code editor
+Programming language selection
+Run/Test button
+Submit button
+Result
+After running/submitting, display:
+Test-case result
+Test cases passed
+Score obtained
+Submission status
+Hint
+A Hint button can be provided for selected questions.
+Before using a hint, the website should display the applicable score penalty.
+8. Round 3 — Debug Lab
+NOTE: 5Q Questions manually inserted [CODE SNIPPETS]
+Duration: 1 Hour
+Round 3 contains three stages:
+Broken Loop — 20 Marks
+Teams identify and fix programming/debugging errors.
+Hidden Bug — 20 Marks
+Teams find bugs that may only appear with particular inputs or test cases.
+Final Boss — 1 Hard Challenge
+The final and most difficult challenge of Code Sprint.
+The exact marks for the Final Boss should be finalized by the question-setting team.
+At 4:00 PM, all submissions should automatically close.
+9. Timer System
+The website should have a central timer system.
+Competition timing
+Phase
+Duration
+Round 1 — Logic Quest
+2 hours
+Lunch Lock
+1 hour
+Round 2 — Code Arena
+2 hours
+Round 3 — Debug Lab
+1 hour
+The timer should be server-controlled.
+The system should automatically:
+Start rounds
+Lock rounds
+Unlock the next round
+Stop submissions
+Display countdowns
+10. Hint System
+The website should support hints for selected questions.
+When a participant clicks Hint:
+“Using this hint will reduce your score. Continue?”
+If the participant confirms:
+Hint is displayed.
+Score penalty is applied.
+Hint usage is recorded.
+The exact penalty should be decided by the question-setting team.
+11. Live Leaderboard
+The website should contain a Live Leaderboard.
+It should display:
+S. No
+Team
+Rank
+Score
+1.
+Team A
+2
+480
+2.
+Team B
+1
+xxxxx
+3.
+Team C
+3
+xxxxx
+The leaderboard should automatically update whenever scores change.
+Teams should be able to see their current position during the competition.
+At 4:00 PM:
+FINAL LEADERBOARD → SCORES FROZEN
+The final ranking should not change unless an authorized judge makes a correction.
+12. Judge/Admin Dashboard
+A separate secure dashboard should be provided for judges and administrators.
+The dashboard should allow judges to monitor all 36 teams.
+Judges should be able to view:
+Team name
+Team ID
+Current score
+Current rank
+Current round
+Progress
+Submissions
+Submission time
+Hint usage
+Activity
+Suspicious activity flags
+13. Final Results Page
+After the competition ends, the website should display a dedicated Results Page.
+CODE SPRINT — FINAL RESULTS
+Winner — Team A
+Runner-up — Team B
+The results page can show:
+Final rank
+Team name
+Final score
+Round-wise scores
+The final leaderboard should remain frozen after verification.
+15. Overall Website Flow
+The complete participant flow should be:
+Login
+↓
+Team Dashboard
+↓
+The Gate
+↓
+The Maze
+↓
+The Cipher
+↓
+Lunch Lock
+↓
+Code Arena
+↓
+Debug Lab
+↓
+Final Boss
+↓
+Final Leaderboard
+↓
+Results Page
+16. Development Priority
+The developer should build the website in this order:
+1. Login &amp; Team Management
+↓
+2. Team Dashboard
+↓
+3. Question System
+↓
+4. Code Editor &amp; Code Execution
+↓
+5. Submission &amp; Automatic Evaluation
+↓
+6. Scoring System
+↓
+7. Timer &amp; Round Control
+↓
+8. Live Leaderboard
+↓
+9. Judge/Admin Dashboard
+↓
+10. Hint &amp; Activity System
+↓
+11. Final Results Page
+↓
+12. Game-like Visual Design

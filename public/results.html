@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CODE SPRINT — Final Results</title>
+  <link rel="stylesheet" href="/css/main.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="container">
+      <a class="brand" href="/">CODE<span>/</span>SPRINT</a>
+      <div class="statusline">
+        <span class="badge" id="frozen-badge">Provisional</span>
+        <a href="/leaderboard.html">Leaderboard</a>
+        <button class="btn btn-sm" id="theme-btn" type="button">Theme</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="section">
+      <h1>Final Results</h1>
+      <p class="muted small" id="meta"></p>
+    </section>
+
+    <section class="section">
+      <div class="grid grid-3">
+        <div class="card" style="border-top:3px solid var(--border-strong)">
+          <div class="label">Winner</div>
+          <div class="stat" id="winner">—</div>
+        </div>
+        <div class="card">
+          <div class="label">Runner-up</div>
+          <div class="stat" id="runner">—</div>
+        </div>
+        <div class="card">
+          <div class="label">Second Runner-up</div>
+          <div class="stat" id="third">—</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-head"><h2>Standings</h2></div>
+      <div style="overflow-x:auto">
+        <table>
+          <thead><tr><th>S. No</th><th>Team</th><th>Team ID</th><th class="num">Rank</th><th class="num">Final Score</th></tr></thead>
+          <tbody id="results-body"><tr><td colspan="5" class="muted">Loading…</td></tr></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <script src="/js/common.js"></script>
+  <script>
+    'use strict';
+    const $ = (id) => document.getElementById(id);
+    document.getElementById('theme-btn').onclick = () => csToggleTheme();
+
+    async function load() {
+      try {
+        const r = await csApi('/api/results');
+        const badge = $('frozen-badge');
+        badge.textContent = r.frozen ? 'Final — Frozen' : 'Provisional';
+        badge.className = 'badge' + (r.frozen ? ' badge-solid' : '');
+        $('meta').textContent = r.frozen
+          ? `Frozen at ${new Date(r.frozenAt).toLocaleString()}${r.corrected ? ' · republished after authorized correction' : ''}`
+          : 'These are provisional results and may change until the organizer freezes them.';
+        $('winner').textContent = r.top.winner ? r.top.winner.team : '—';
+        $('runner').textContent = r.top.runnerUp ? r.top.runnerUp.team : '—';
+        $('third').textContent = r.top.secondRunnerUp ? r.top.secondRunnerUp.team : '—';
+        $('results-body').innerHTML = r.teams.map((t) =>
+          `<tr><td>${t.sNo}.</td><td>${csEsc(t.team)}</td><td class="mono">${csEsc(t.teamId)}</td><td class="num">${t.rank}</td><td class="num">${t.score}</td></tr>`).join('')
+          || '<tr><td colspan="5" class="muted">No results yet.</td></tr>';
+      } catch (e) { /* ignore */ }
+    }
+    load();
+  </script>
+</body>
+</html>

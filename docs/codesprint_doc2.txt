@@ -1,0 +1,486 @@
+ROUND 1 – LOGIC QUEST
+GATE — Quantitative Aptitude
+Q1 — Easy | Percentages
+A student scored 360 marks out of 500. What percentage did the student score?
+A) 68%B) 70%C) 72%D) 75%
+Answer: C) 72%
+Q2 — Easy–Moderate | Ratio
+The ratio of boys to girls in a class is 3 : 2. If there are 45 boys, how many students are there in total?
+A) 60B) 70C) 75D) 80
+Answer: C) 75
+Q3 — Moderate | Time &amp; Work
+A can complete a task in 12 days and B can complete the same task in 18 days. If they work together, how many days will they take?
+A) 6.2 daysB) 7.2 daysC) 8 daysD) 9 days
+Answer: B) 7.2 days
+Q4 — Moderate–Hard | Probability
+A box contains 5 red, 4 blue and 3 green balls. One ball is selected at random.
+What is the probability that the ball is neither red nor green?
+A) 1/4B) 1/3C) 4/12D) 5/12
+Answer: B) 1/3
+Q5 — Challenging | Average &amp; Replacement
+The average age of 8 students is 20 years. When one student leaves the group, the average becomes 19 years.
+What was the age of the student who left?
+A) 25 yearsB) 26 yearsC) 27 yearsD) 28 years
+Answer: C) 27 years
+Logic:
+Original total = 8 × 20 = 160New total = 7 × 19 = 133Age = 160 − 133 = 27
+MAZE — Logical Reasoning
+Q6 — Easy | Direction Sense
+A person walks 8 m north, then turns right and walks 6 m. He then turns right again and walks 8 m.
+Where is he now with respect to his starting point?
+A) 6 m EastB) 6 m WestC) 8 m EastD) 8 m South
+Answer: A) 6 m East
+Q7 — Easy–Moderate | Number Pattern
+Find the missing number:
+4, 9, 19, 39, 79, ?
+A) 149B) 158C) 159D) 160
+Answer: C) 159
+Pattern:
+×2 + 1
+4 → 9 → 19 → 39 → 79 → 159
+Q8 — Moderate | Seating Arrangement
+Six students P, Q, R, S, T and U are sitting in a row.
+P sits to the left of Q.
+R sits immediately to the right of Q.
+S sits to the left of P.
+T sits to the right of R.
+U sits at the extreme left.
+Who occupies the third position from the left?
+A) PB) QC) RD) S
+Arrangement:
+U – S – P – Q – R – T
+Answer: A) P
+Q9 — Moderate–Hard | Logical Deduction
+Five people A, B, C, D and E have different heights.
+A is taller than B.
+C is shorter than D.
+B is taller than C.
+D is shorter than A.
+Who is definitely the tallest?
+A) AB) BC) CD) D
+Answer: A) A
+Because:
+A &gt; B &gt; Cand A &gt; D &gt; C
+Therefore A is definitely taller than everyone.
+Q10 — Challenging | Arrangement
+Seven people A, B, C, D, E, F and G are standing in a line.
+B is immediately to the right of A.
+C is somewhere to the left of A.
+D is immediately to the right of E.
+F is at the extreme left.
+G is between C and A.
+Which of the following could be the correct arrangement?
+A) F C G A B E DB) F G C A B E DC) C F G A B D ED) F C A G B E D
+Answer: A
+Check:
+F – C – G – A – B – E – D
+✔ A-B together✔ C left of A✔ E-D together✔ F at extreme left✔ G between C and A
+CIPHER — Pattern &amp; Analytical Reasoning
+Q11 — Easy | Letter Coding
+If:
+CAT → DBU
+using the same pattern, what is:
+DOG → ?
+A) EPHB) EOGC) FPHD) DPH
+Answer: A) EPH
+Each letter moves one position forward.
+Q12 — Easy–Moderate | Number Coding
+If:
+APPLE = 50
+using A=1, B=2, ..., Z=26, what is:
+GRAPE = ?
+A) 45B) 47C) 49D) 51
+G + R + A + P + E= 7 + 18 + 1 + 16 + 5= 47
+Answer: B) 47
+Q13 — Moderate | Reverse Coding
+In a certain code:
+TABLE → GZYOV
+The code is obtained by replacing each letter with its opposite letter:
+A ↔ ZB ↔ YC ↔ X ...
+Using the same rule, what is:
+CHAIR → ?
+A) XSZRIB) XSZRIC) XSZRID) XHZRI
+Let&apos;s calculate:
+C → XH → SA → ZI → RR → I
+So:
+CHAIR → XSZRI
+Answer: XSZRI
+Q14 — Moderate–Hard | Pattern Coding
+In a certain code:
+ROAD → 18-15-1-4
+and
+GAME → 7-1-13-5
+What would be the code for:
+CODE
+A) 3-15-4-5B) 4-15-3-5C) 3-14-4-5D) 2-15-4-6
+Using A=1, B=2, ...:
+C = 3O = 15D = 4E = 5
+Answer: A) 3-15-4-5
+Q15 — Challenging | Pattern Recognition
+A special code follows an unknown rule:
+2 → 63 → 124 → 205 → 306 → 42
+Using the same rule:
+8 → ?
+A) 56B) 64C) 72D) 80
+Answer: C) 72
+Pattern:
+n × (n + 1)
+8 × 9 = 72
+ROUND 2 – CODE ARENA
+STAGE 1 — PREDICT[3]
+3 Questions
+These test code tracing and understanding.
+Q1 — Easy
+x = 5
+y = 2
+x = x + y
+y = x - y
+x = x - y
+print(x, y)
+What is the output?
+A) 5 2B) 2 5C) 7 5D) 5 7
+Answer: B
+Q2 — Moderate
+int x = 10;
+for(int i = 1; i &lt;= 3; i++)
+{
+x = x - i;
+}
+printf(&quot;%d&quot;, x);
+A) 3B) 4C) 5D) 6
+Answer: B
+Q3 — Hard
+arr = [2, 4, 6, 8]
+result = 0
+for i in range(len(arr)):
+result += arr[i] * i
+print(result)
+A) 30B) 40C) 44D) 50
+Answer: C
+Calculation:
+2×0 + 4×1 + 6×2 + 8×3 = 44
+STAGE 2 — FIX IT[2]
+2 Questions
+Q4 — Find the Bug
+The program should find the smallest element.
+arr = [8, 3, 12, 5, 1]
+smallest = 0
+for x in arr:
+if x &lt; smallest:
+smallest = x
+print(smallest)
+What should be changed?
+Answer:
+smallest = arr[0]
+Q5 — Hidden Loop Bug
+The program should print:
+1 2 3 4 5
+int i = 1;
+while(i &lt;= 5)
+{
+printf(&quot;%d &quot;, i);
+i--;
+}
+Identify and fix the error.
+Answer:
+i++;
+instead of:
+i--;
+STAGE 3 — COMPLETE IT[3]
+3 Questions
+Q6 — Complete the Function
+Complete the function to return the square of a number.
+def square(n):
+__________
+print(square(6))
+Answer:
+return n * n
+Q7 — Complete the Condition
+Find whether an array contains a target value.
+int arr[] = {4, 7, 2, 9, 5};
+int target = 9;
+int found = 0;
+for(int i = 0; i &lt; 5; i++)
+{
+if(______________)
+{
+found = 1;
+break;
+}
+}
+Answer:
+arr[i] == target
+Q8 — Complete the Logic
+Complete the code to reverse a string.
+s = &quot;HELLO&quot;
+rev = &quot;&quot;
+for i in range(____________):
+rev += s[i]
+print(rev)
+Instead of simply filling len(s), make them understand reverse traversal.
+Answer:
+len(s)-1, -1, -1
+So the loop becomes:
+for i in range(len(s)-1, -1, -1):
+Output:
+OLLEH
+STAGE 4 — SOLVE[3]
+Q9 — Two Sum
+Given an array and a target, find whether two different elements add up to the target.
+Input
+6
+2 7 11 15 3 6
+9
+Output
+Yes
+Because:
+2 + 7 = 9
+Q10 — Character Frequency
+Given a string, find the frequency of each character.
+Input
+PROGRAMMING
+Expected output should identify frequencies such as:
+P → 1
+R → 2
+O → 1
+G → 2
+...
+You can specify that spaces should be ignored.
+Q11 — Rotate Array
+Rotate an array to the right by K positions.
+Input
+5
+1 2 3 4 5
+2
+Output
+4 5 1 2 3
+This is a good 2nd–4th year problem without becoming advanced DSA.
+STAGE 5 — CHALLENGE[3]
+Q12 — Longest Increasing Subarray
+Find the length of the longest contiguous strictly increasing portion of an array.
+Input
+8
+1 2 3 2 3 4 5 1
+Output
+4
+Because:
+2 3 4 5
+has length 4.
+Q13 — First Non-Repeating Character
+Given a string, find the first character that occurs exactly once.
+Input
+SWISS
+Output
+W
+Because W is the first character occurring only once.
+Q14 — Maximum Subarray Sum
+Given an array containing positive and negative integers, find the maximum sum of a contiguous subarray.
+Input
+8
+-2 1 -3 4 -1 2 1 -5
+Output
+6
+The maximum subarray is:
+4 -1 2 1
+This is an excellent final challenge because students need to discover an efficient approach.
+CODING QUESTIONS[Optional]
+Q15 — Palindrome String
+Determine whether a given string is a palindrome.
+Input
+MADAM
+Output
+Palindrome
+Q16 — Second Largest Distinct Element
+Find the second largest distinct element without sorting.
+Input
+7
+10 25 8 25 30 15 30
+Output
+25
+Q17 — Move Zeros
+Move all zeros to the end while maintaining the order of non-zero elements.
+Input
+7
+0 1 0 3 12 0 5
+Output
+1 3 12 5 0 0 0
+Q18 — Missing Number
+An array contains numbers from 1 to N, with one number missing.
+Input
+5
+1 2 4 5
+Output
+3
+Q19 — Merge Two Sorted Arrays
+Given two sorted arrays, merge them into one sorted array.
+Input
+3
+1 4 7
+4
+2 3 5 8
+Output
+1 2 3 4 5 7 8
+Q20 — Valid Parentheses
+Given a string containing:
+( ) { } [ ]
+determine whether the brackets are properly balanced.
+Input
+{[()]}
+Output
+Valid
+Example:
+{[(])}
+Output:
+Invalid
+ROUND 3 – DEBUG LAB
+STAGE 1 — BROKEN LOOP[2]
+Q1. Infinite Loop — 10 Marks
+The program should print the first 10 even numbers:
+2 4 6 8 10 12 14 16 18 20
+But the program does not terminate.
+#include &lt;stdio.h&gt;
+int main() {
+int i = 2;
+while(i &lt;= 20) {
+printf(&quot;%d &quot;, i);
+i -= 2;
+}
+return 0;
+}
+Task
+Identify the error and modify the code so that the expected output is produced.
+Expected fix
+i += 2;
+Q2. Nested Loop Error — 10 Marks
+The following program is intended to print:
+1 2 3
+1 2 3
+1 2 3
+But the output is incorrect.
+#include &lt;stdio.h&gt;
+int main() {
+for(int i = 1; i &lt;= 3; i++) {
+for(int j = 1; j &lt; 3; j++) {
+printf(&quot;%d &quot;, j);
+}
+printf(&quot;\n&quot;);
+}
+return 0;
+}
+Task
+Find and fix the loop error.
+Expected fix
+Change:
+j &lt; 3
+to:
+j &lt;= 3
+STAGE 2 — HIDDEN BUG[2]
+Q3. Hidden Array Bug — 10 Marks
+The program is intended to find the second largest distinct element.
+#include &lt;stdio.h&gt;
+#include &lt;limits.h&gt;
+int main() {
+int arr[] = {10, 25, 8, 30, 15};
+int n = 5;
+int largest = arr[0];
+int second = arr[0];
+for(int i = 1; i &lt; n; i++) {
+if(arr[i] &gt; largest) {
+second = largest;
+largest = arr[i];
+}
+else if(arr[i] &gt; second) {
+second = arr[i];
+}
+}
+printf(&quot;%d&quot;, second);
+return 0;
+}
+For:
+10 25 8 30 15
+the program gives:
+25
+But test it with:
+30 30 20 15 10
+It gives an incorrect result.
+Task
+Find the hidden bug and modify the program so that it correctly finds the second largest distinct element.
+Expected issue
+The condition must ensure that arr[i] is not equal to largest.
+A suitable correction is:
+else if(arr[i] &gt; second &amp;&amp; arr[i] != largest)
+Students should also initialize second appropriately rather than assuming arr[0] is a valid second-largest candidate.
+Q4. Hidden String Bug — 10 Marks
+The following program checks whether two strings are equal.
+#include &lt;stdio.h&gt;
+int main() {
+char str1[] = &quot;Code&quot;;
+char str2[] = &quot;code&quot;;
+int same = 1;
+for(int i = 0; str1[i] != &apos;\0&apos;; i++) {
+if(str1[i] != str2[i]) {
+same = 0;
+break;
+}
+}
+if(same)
+printf(&quot;Same&quot;);
+else
+printf(&quot;Different&quot;);
+return 0;
+}
+The programmer wants the comparison to be case-insensitive.
+Therefore:
+Code
+code
+CODE
+cOdE
+should all be considered equal.
+Task
+Find the hidden logical issue and modify the program so that the comparison is case-insensitive.
+Expected approach
+Convert both characters to the same case before comparison, for example using:
+tolower()
+from &lt;ctype.h&gt;.
+STAGE 3 — FINAL BOSS[1]
+1 Question — 10 Marks
+Q5. Final Boss — Debug the Array Rotation
+The following program is intended to rotate an array to the right by k positions.
+Example:
+Array:  1 2 3 4 5
+k = 2
+Expected:
+4 5 1 2 3
+But the program contains a logical error.
+#include &lt;stdio.h&gt;
+int main() {
+int arr[] = {1, 2, 3, 4, 5};
+int n = 5;
+int k = 2;
+for(int r = 0; r &lt; k; r++) {
+int last = arr[n - 1];
+for(int i = n - 1; i &gt; 0; i--) {
+arr[i] = arr[i - 1];
+}
+arr[0] = arr[n - 1];
+}
+for(int i = 0; i &lt; n; i++)
+printf(&quot;%d &quot;, arr[i]);
+return 0;
+}
+Task
+Identify the bug and correct the program so that it produces:
+4 5 1 2 3
+Hidden issue
+The last element is saved in:
+int last = arr[n - 1];
+but then the code incorrectly does:
+arr[0] = arr[n - 1];
+At that point arr[n-1] has already been overwritten.
+Correct line:
+arr[0] = last;
+Corrected portion:
+for(int i = n - 1; i &gt; 0; i--) {
+arr[i] = arr[i - 1];
+}
+arr[0] = last;

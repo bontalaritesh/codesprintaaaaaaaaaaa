@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="color-scheme" content="light dark">
+  <title>CODE SPRINT — Login</title>
+  <link rel="stylesheet" href="/css/main.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="container">
+      <a class="brand" href="/">CODE<span>/</span>SPRINT</a>
+      <div class="statusline">
+        <span class="badge" id="status-badge">—</span>
+        <button class="btn btn-sm" id="theme-btn" type="button">Theme</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="login-wrap">
+    <h1 class="login-title">CODE<br>SPRINT</h1>
+    <p class="muted">One-day coding competition platform. Accounts are provisioned by the organizer — there is no public registration.</p>
+
+    <div class="tabs" role="tablist">
+      <button type="button" id="tab-team" class="active">Team Login</button>
+      <button type="button" id="tab-judge">Judge / Admin</button>
+    </div>
+
+    <form id="login-form">
+      <label for="username">Team ID / Username</label>
+      <input id="username" name="username" autocomplete="username" required>
+      <label for="password">Password</label>
+      <input id="password" name="password" type="password" autocomplete="current-password" required>
+      <div style="margin-top:18px">
+        <button class="btn btn-primary" type="submit" style="width:100%">Sign In</button>
+      </div>
+      <p id="login-error" class="small" style="font-weight:600;min-height:20px" role="alert"></p>
+    </form>
+  </main>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="/js/common.js"></script>
+  <script>
+    const $ = (id) => document.getElementById(id);
+    let mode = 'team';
+
+    $('tab-team').onclick = () => switchTab('team');
+    $('tab-judge').onclick = () => switchTab('judge');
+    function switchTab(m) {
+      mode = m;
+      $('tab-team').classList.toggle('active', m === 'team');
+      $('tab-judge').classList.toggle('active', m !== 'team');
+      $('username').placeholder = m === 'team' ? 'team01' : 'judge';
+    }
+
+    $('theme-btn').onclick = () => csToggleTheme();
+
+    // Competition status badge (public API, no auth)
+    async function refreshStatus() {
+      try {
+        const s = await csApi('/api/status');
+        const b = $('status-badge');
+        b.textContent = s.phaseLabel;
+        b.className = 'badge' + (s.phase.startsWith('round') ? ' badge-live' : '');
+      } catch { /* offline */ }
+    }
+    refreshStatus();
+    setInterval(refreshStatus, 30000);
+    if (window.io) {
+      const socket = io();
+      socket.on('phase', (p) => {
+        const b = $('status-badge');
+        b.textContent = p.phaseLabel;
+        b.className = 'badge' + (p.phase.startsWith('round') ? ' badge-live' : '');
+      });
+    }
+
+    $('login-form').onsubmit = async (e) => {
+      e.preventDefault();
+      $('login-error').textContent = '';
+      try {
+        const r = await csApi('/api/login', { method: 'POST', body: { username: $('username').value, password: $('password').value } });
+        window.location.href = r.redirect;
+      } catch (err) {
+        $('login-error').textContent = err.message;
+      }
+    };
+  </script>
+</body>
+</html>

@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CODE SPRINT — Leaderboard</title>
+  <link rel="stylesheet" href="/css/main.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="container">
+      <a class="brand" href="/">CODE<span>/</span>SPRINT</a>
+      <div class="statusline">
+        <span class="badge" id="phase-badge">—</span>
+        <a href="/">Login</a>
+        <button class="btn btn-sm" id="theme-btn" type="button">Theme</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="section">
+      <div class="section-head">
+        <h2 id="lb-title">Live Leaderboard</h2>
+        <span class="muted small">Tie-break: score → earlier first correct submission → team ID</span>
+      </div>
+      <p class="muted small" id="frozen-note" hidden><strong>FINAL — SCORES FROZEN</strong></p>
+      <div style="overflow-x:auto">
+        <table id="lb-table">
+          <thead><tr><th>S. No</th><th>Team</th><th>Team ID</th><th class="num">Rank</th><th class="num">Score</th></tr></thead>
+          <tbody id="lb-body"><tr><td colspan="5" class="muted">Loading…</td></tr></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="/js/common.js"></script>
+  <script>
+    'use strict';
+    const $ = (id) => document.getElementById(id);
+    document.getElementById('theme-btn').onclick = () => csToggleTheme();
+    const me = window.localStorage.getItem('cs-team-id');
+
+    function render(data) {
+      const body = $('lb-body');
+      if (!data.teams.length) { body.innerHTML = '<tr><td colspan="5" class="muted">No teams yet.</td></tr>'; return; }
+      body.innerHTML = data.teams.map((t) =>
+        `<tr${t.teamId === me ? ' class="me"' : ''}><td>${t.sNo}.</td><td>${csEsc(t.team)}</td><td class="mono">${csEsc(t.teamId)}</td><td class="num">${t.rank}</td><td class="num">${t.score}</td></tr>`
+      ).join('');
+      if (data.frozen) {
+        $('lb-title').textContent = 'Final Leaderboard';
+        $('frozen-note').hidden = false;
+      }
+    }
+    async function load() { try { render(await csApi('/api/leaderboard')); } catch { /* ignore */ } }
+    load();
+    const socket = io();
+    socket.on('standings', render);
+    socket.on('phase', (p) => {
+      $('phase-badge').textContent = p.phaseLabel;
+      $('phase-badge').className = 'badge' + (p.phase.startsWith('round') ? ' badge-live' : '');
+    });
+    csApi('/api/status').then((p) => { $('phase-badge').textContent = p.phaseLabel; }).catch(() => {});
+  </script>
+</body>
+</html>

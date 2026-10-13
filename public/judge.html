@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CODE SPRINT — Judge Dashboard</title>
+  <link rel="stylesheet" href="/css/main.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="container">
+      <a class="brand" href="/">CODE<span>/</span>SPRINT</a>
+      <div class="statusline">
+        <span class="badge" id="phase-badge">—</span>
+        <span class="mono" id="clock">--:--:--</span>
+        <a href="/leaderboard.html">Leaderboard</a>
+        <a href="/results.html">Results</a>
+        <button class="btn btn-sm" id="theme-btn" type="button">Theme</button>
+        <button class="btn btn-sm" id="logout-btn" type="button">Log out</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="section">
+      <div class="section-head"><h2>Competition Control</h2><span class="muted small" id="deadline-info"></span></div>
+      <div class="grid grid-3">
+        <div class="card"><div class="label">Teams</div><div class="stat" id="stat-teams">0</div></div>
+        <div class="card"><div class="label">Graded Submissions</div><div class="stat" id="stat-subs">0</div></div>
+        <div class="card"><div class="label">Open Incidents</div><div class="stat" id="stat-incidents">0</div></div>
+      </div>
+      <div class="card" style="margin-top:20px;border:2px solid var(--border-strong)">
+        <h3>Round Timer Control</h3>
+        <p class="muted small">You are the host: the countdown only moves while <em>you</em> say so. Opening a round never starts its timer; participants see “Waiting for host to start” until you press START.</p>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:end;margin-top:8px">
+          <div><label for="timer-round">Round</label>
+            <select id="timer-round" style="min-width:160px">
+              <option value="round1">Round 1 — Logic Quest</option>
+              <option value="round2">Round 2 — Code Arena</option>
+              <option value="round3">Round 3 — Debug Lab</option>
+            </select></div>
+          <div><label for="timer-dur-min">Duration (min)</label><input type="number" id="timer-dur-min" min="0" max="1440" style="width:110px"></div>
+          <div><label for="timer-dur-sec">+ seconds</label><input type="number" id="timer-dur-sec" min="0" max="59" style="width:110px"></div>
+          <button class="btn btn-sm" id="timer-set-duration" type="button" disabled>Set duration</button>
+          <div><label for="timer-ext-min">Extend by (min)</label><input type="number" id="timer-ext-min" min="1" max="240" value="5" style="width:110px"></div>
+          <button class="btn btn-sm" id="timer-extend" type="button" disabled>+ Extend</button>
+        </div>
+        <div style="display:flex;gap:18px;align-items:center;margin-top:14px;flex-wrap:wrap">
+          <div class="stat timer" id="timer-clock" style="font-size:44px">00:00:00</div>
+          <span class="badge" id="timer-state-badge">READY</span>
+          <span class="muted small" id="timer-state-msg">Waiting for host to start</span>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">
+          <button class="btn btn-primary" id="timer-start" type="button" disabled>▶ Start</button>
+          <button class="btn" id="timer-pause" type="button" disabled>⏸ Pause</button>
+          <button class="btn" id="timer-resume" type="button" disabled>▶ Resume</button>
+          <button class="btn" id="timer-stop" type="button" disabled>⏹ Stop</button>
+          <button class="btn" id="timer-reset" type="button" disabled>↺ Reset</button>
+          <button class="btn btn-danger" id="timer-end" type="button" disabled>■ End round</button>
+        </div>
+        <div class="muted small" style="margin-top:10px">Last action: <span id="timer-last-action" class="mono">—</span> · <span id="timer-last-actor">—</span> · state version <span id="timer-version" class="mono">—</span> · <span id="timer-sync">synced</span></div>
+      </div>
+      <div class="card" style="margin-top:20px">
+        <h3>System Health</h3>
+        <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px">
+          <div><div class="label">Database</div><div class="stat" id="h-db" style="font-size:22px">—</div></div>
+          <div><div class="label">Connected</div><div class="stat" id="h-conn" style="font-size:22px">—</div></div>
+          <div><div class="label">Uptime</div><div class="stat" id="h-uptime" style="font-size:22px">—</div></div>
+          <div><div class="label">Last backup</div><div class="stat" id="h-backup" style="font-size:22px">—</div></div>
+        </div>
+        <div style="margin-top:10px"><button class="btn" id="backup-btn" type="button">Back up now</button> <span class="muted small">auto-backups run every 10 min during rounds (last 20 kept)</span></div>
+      </div>
+      <div class="card" style="margin-top:20px">
+        <h3>Quick Start</h3>
+        <p class="muted small">Start the whole competition at any time — Round 1 opens immediately (or after a delay), lunch and later rounds are scheduled automatically. Use “Hold” to pause everything back to <strong>Not Started</strong> (all rounds lock; nothing is deleted).</p>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:6px">
+          <button class="btn btn-primary" id="qs-now" type="button">▶ Start now</button>
+          <button class="btn" id="qs-5" type="button">Start in 5 min</button>
+          <button class="btn" id="qs-15" type="button">Start in 15 min</button>
+          <button class="btn btn-danger" id="hold-btn" type="button">⏸ Hold / postpone</button>
+        </div>
+      </div>
+      <div class="card" style="margin-top:20px">
+        <h3>Schedule Settings</h3>
+        <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px">
+          <div><label for="set-date">Competition Date</label><input type="date" id="set-date"></div>
+          <div><label for="set-r1s">R1 Start</label><input type="time" id="set-r1s"></div>
+          <div><label for="set-r2s">R2 Start</label><input type="time" id="set-r2s"></div>
+          <div><label for="set-r3s">R3 Start</label><input type="time" id="set-r3s"></div>
+          <div><label for="set-r1m">R1 Length (min)</label><input type="number" id="set-r1m" min="1" value="120"></div>
+          <div><label for="set-r2m">R2 Length (min)</label><input type="number" id="set-r2m" min="1" value="120"></div>
+          <div><label for="set-r3m">R3 Length (min)</label><input type="number" id="set-r3m" min="1" value="60"></div>
+          <div><label for="set-threshold">Tab-Switch Limit</label><input type="number" id="set-threshold" min="1"></div>
+          <div><label for="set-hints">Hints Enabled</label><select id="set-hints"><option value="1">Yes</option><option value="0">No</option></select></div>
+        </div>
+        <div style="margin-top:12px"><button class="btn btn-primary" id="save-settings" type="button">Save settings</button></div>
+        <div id="schedule-conflicts" class="small" style="font-weight:600;margin-top:8px"></div>
+      </div>
+      <div class="card" style="margin-top:20px;border:2px solid var(--border-strong)">
+        <h3>Final Results</h3>
+        <p class="muted small" id="freeze-status">Provisional results are live. Freezing is irreversible without an authorized correction.</p>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn btn-danger" id="freeze-btn" type="button">Freeze final leaderboard</button>
+          <button class="btn" id="unfreeze-btn" type="button">Unfreeze (correction)</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-head"><h2>Teams</h2><input id="team-filter" placeholder="Filter…" style="max-width:220px"></div>
+      <div style="overflow-x:auto">
+        <table id="teams-table">
+          <thead><tr><th>Rank</th><th>Team</th><th>Team ID</th><th class="num">Score</th><th class="num">Hints</th><th class="num">Tab Switches</th><th>Status</th><th>Actions</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-head"><h2>Question Bank Manager</h2><span class="muted small" id="bank-count"></span></div>
+      <div class="card">
+        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+          <input id="bank-search" placeholder="Search title / topic / number…" style="max-width:260px">
+          <select id="bank-round" style="max-width:190px"><option value="">All rounds</option>
+            <option value="round1">Round 1</option><option value="round2">Round 2</option><option value="round3">Round 3</option></select>
+          <select id="bank-review" style="max-width:190px"><option value="">All review states</option>
+            <option value="needs_review">Needs review</option><option value="verified">Verified</option></select>
+          <button class="btn btn-sm" id="bank-load" type="button">Load bank</button>
+          <button class="btn btn-sm btn-primary" id="bank-new" type="button">+ Add question</button>
+        </div>
+        <div id="bank-list" class="small" style="margin-top:14px;max-height:560px;overflow:auto"></div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-head"><h2>Recent Submissions</h2></div>
+      <div style="overflow-x:auto">
+        <table id="subs-table">
+          <thead><tr><th>Time</th><th>Team</th><th>Question</th><th>Result</th><th class="num">Marks</th><th></th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-head"><h2>Score Adjustment</h2></div>
+      <div class="card">
+        <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px">
+          <div><label for="adj-team">Team ID</label><input id="adj-team" placeholder="team01"></div>
+          <div><label for="adj-delta">Delta</label><input id="adj-delta" type="number" placeholder="+10 / −10"></div>
+          <div style="grid-column:span 2"><label for="adj-reason">Reason (mandatory)</label><input id="adj-reason"></div>
+        </div>
+        <div style="margin-top:12px"><button class="btn" id="adj-btn" type="button">Apply adjustment</button></div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-head"><h2>Incidents &amp; Flags</h2></div>
+      <div class="grid grid-2">
+        <div class="card"><h3>Tab-Switch Incidents</h3><div id="incidents-list" class="small"></div></div>
+        <div class="card"><h3>Active Flags</h3><div id="flags-list" class="small"></div></div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-head"><h2>Audit Log</h2></div>
+      <div style="overflow-x:auto">
+        <table id="audit-table">
+          <thead><tr><th>Time</th><th>Actor</th><th>Action</th><th>Detail</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <dialog id="qedit-dialog" style="max-width:640px;width:92vw">
+    <h3 id="qedit-title">Edit question</h3>
+    <label>Round / Stage</label>
+    <div style="display:flex;gap:8px">
+      <select id="qe-round"><option value="round1">Round 1</option><option value="round2">Round 2</option><option value="round3">Round 3</option></select>
+      <input id="qe-stage" placeholder="stage key (gate, predict…)">
+    </div>
+    <label>Title</label><input id="qe-title">
+    <label>Category / Difficulty / Topic</label>
+    <div style="display:flex;gap:8px">
+      <input id="qe-category" placeholder="category">
+      <input id="qe-difficulty" placeholder="Easy / Moderate…">
+      <input id="qe-topic" placeholder="topic">
+    </div>
+    <label>Statement</label><textarea id="qe-statement" rows="6"></textarea>
+    <label>Type / Marks</label>
+    <div style="display:flex;gap:8px">
+      <select id="qe-type"><option>mcq</option><option>short</option><option>code</option></select>
+      <input id="qe-marks" type="number" min="0">
+    </div>
+    <label id="qe-options-label">Options (one per line — first = correct answer key)</label>
+    <textarea id="qe-options" rows="5" placeholder="68%\n70%\n72%\n75%" spellcheck="false"></textarea>
+    <label id="qe-answer-label">Answer key (for code: JSON grading spec)</label>
+    <textarea id="qe-answer" rows="4" spellcheck="false"></textarea>
+    <label>Explanation (shown at reveal)</label>
+    <textarea id="qe-explanation" rows="3"></textarea>
+    <label>Code snippet / Sample input / Sample output / Constraints</label>
+    <textarea id="qe-snippet" rows="4" spellcheck="false"></textarea>
+    <div style="display:flex;gap:8px">
+      <textarea id="qe-sample-in" rows="2" placeholder="sample input" spellcheck="false"></textarea>
+      <textarea id="qe-sample-out" rows="2" placeholder="sample output" spellcheck="false"></textarea>
+    </div>
+    <input id="qe-constraints" placeholder="constraints">
+    <label>Hint / Hint penalty</label>
+    <div style="display:flex;gap:8px">
+      <input id="qe-hint">
+      <input id="qe-hint-penalty" type="number" min="0" style="max-width:110px">
+    </div>
+    <label>Review / Publication status</label>
+    <div style="display:flex;gap:8px">
+      <select id="qe-review"><option value="verified">verified</option><option value="needs_review">needs_review</option><option value="approved_after_correction">approved_after_correction</option></select>
+      <select id="qe-pub"><option value="approved">approved (live)</option><option value="draft">draft</option><option value="needs_review">needs_review</option></select>
+    </div>
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:16px">
+      <button class="btn" id="qedit-cancel" type="button">Cancel</button>
+      <button class="btn btn-primary" id="qedit-save" type="button">Save</button>
+    </div>
+  </dialog>
+
+  <dialog id="regrade-dialog">
+    <h3>Re-grade submission</h3>
+    <p class="small" id="regrade-info"></p>
+    <label for="regrade-marks">Awarded marks</label>
+    <input type="number" id="regrade-marks" min="0">
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:16px">
+      <button class="btn" id="regrade-cancel" type="button">Cancel</button>
+      <button class="btn btn-primary" id="regrade-save" type="button">Save</button>
+    </div>
+  </dialog>
+
+  <dialog id="confirm-dialog">
+    <h3 id="confirm-title">Confirm</h3>
+    <p class="small" id="confirm-text"></p>
+    <label for="confirm-reason" id="confirm-reason-label">Reason (mandatory)</label>
+    <input id="confirm-reason">
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:16px">
+      <button class="btn" id="confirm-cancel" type="button">Cancel</button>
+      <button class="btn btn-danger" id="confirm-ok" type="button">Confirm</button>
+    </div>
+  </dialog>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="/js/common.js"></script>
+  <script src="/js/judge.js"></script>
+</body>
+</html>

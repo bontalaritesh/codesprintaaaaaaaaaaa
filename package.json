@@ -1,0 +1,19 @@
+{
+  "name": "code-sprint",
+  "version": "1.0.0",
+  "description": "CODE SPRINT — one-day college coding competition platform",
+  "main": "server.js",
+  "scripts": {
+    "seed": "node seed.js",
+    "start": "node scripts/start.js",
+    "test": "node --test test/*.test.js",
+    "backup": "node scripts/backup.js"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "dependencies": {
+    "express": "^4.21.2",
+    "socket.io": "^4.8.1"
+  }
+}

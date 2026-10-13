@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="color-scheme" content="light dark">
+  <title>CODE SPRINT — Team Dashboard</title>
+  <link rel="stylesheet" href="/css/main.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="container">
+      <a class="brand" href="/">CODE<span>/</span>SPRINT</a>
+      <div class="statusline">
+        <span class="badge" id="phase-badge">—</span>
+        <span class="mono" id="clock">--:--:--</span>
+        <a href="/leaderboard.html">Leaderboard</a>
+        <button class="btn btn-sm" id="theme-btn" type="button">Theme</button>
+        <button class="btn btn-sm" id="logout-btn" type="button">Log out</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="section">
+      <div class="section-head"><h2 id="team-title">Team</h2><span class="muted small" id="team-id"></span></div>
+      <div class="grid grid-3">
+        <div class="card"><div class="label">Score</div><div class="stat" id="stat-score">0</div></div>
+        <div class="card"><div class="label">Rank</div><div class="stat" id="stat-rank">—</div></div>
+        <div class="card"><div class="label">Remaining Time</div><div class="stat timer" id="stat-time">--:--:--</div></div>
+        <div class="card"><div class="label">Progress</div><div class="stat" id="stat-progress">0%</div><div class="muted small" id="stat-progress-detail"></div></div>
+        <div class="card"><div class="label">Hint Penalty</div><div class="stat" id="stat-hint">0</div></div>
+        <div class="card"><div class="label">Tab Switches</div><div class="stat" id="stat-tabs">0</div></div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-head"><h2>Competition Journey</h2><span class="muted small" id="journey-note"></span></div>
+      <div class="journey" id="journey"></div>
+    </section>
+
+    <section class="section" id="review-section" hidden>
+      <div class="card" style="border-left:4px solid var(--border-strong)">
+        <strong>Under review.</strong> A judge has flagged your team: <span id="flag-reasons"></span>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-head"><h2>Rounds</h2></div>
+      <div class="grid grid-3" id="rounds"></div>
+    </section>
+  </main>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="/js/common.js"></script>
+  <script src="/js/timer-ui.js"></script>
+  <script src="/js/team.js"></script>
+</body>
+</html>

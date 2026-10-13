@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CODE SPRINT — Workspace</title>
+  <link rel="stylesheet" href="/css/main.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css">
+  <style>
+    .CodeMirror { height: 340px; border: 1px solid var(--border); background: var(--surface); color: var(--text); }
+    .CodeMirror-gutters { background: var(--surface-2); border-right: 1px solid var(--border); }
+    .CodeMirror-cursor { border-left: 2px solid var(--text); }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="container">
+      <a class="brand" href="/">CODE<span>/</span>SPRINT</a>
+      <div class="statusline">
+        <span class="badge" id="phase-badge">—</span>
+        <span class="mono" id="clock">--:--:--</span>
+        <a href="/team">Dashboard</a>
+        <a href="/leaderboard">Leaderboard</a>
+        <button class="btn btn-sm" id="theme-btn" type="button">Theme</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <div class="section" id="locked-msg" hidden>
+      <div class="card" style="border-left:4px solid var(--border-strong)">
+        <strong>This round is locked.</strong> <span id="locked-detail" class="muted"></span>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="q-nav" id="q-nav"></div>
+      <div class="grid" style="grid-template-columns: 1.2fr 1fr; gap:24px" id="workspace-grid">
+        <section>
+          <div class="section-head"><h2 id="q-title">Question</h2><span class="badge" id="q-marks"></span></div>
+          <div class="muted small" id="q-meta"></div>
+          <div id="q-statement" style="white-space:pre-wrap;margin-top:14px"></div>
+          <div id="q-snippet" hidden style="margin-top:14px">
+            <div class="label muted small" style="text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px">Code</div>
+            <pre class="codeblock" id="q-snippet-pre" style="white-space:pre"></pre>
+          </div>
+          <div id="q-sample" hidden style="margin-top:14px;display:grid;grid-template-columns:1fr 1fr;gap:12px">
+            <div><div class="label muted small" style="text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px">Sample Input</div>
+              <pre class="codeblock" id="q-sample-in" style="white-space:pre-wrap;min-height:38px"></pre></div>
+            <div><div class="label muted small" style="text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px">Sample Output</div>
+              <pre class="codeblock" id="q-sample-out" style="white-space:pre-wrap;min-height:38px"></pre></div>
+          </div>
+          <div id="q-constraints" class="muted small" style="margin-top:10px;white-space:pre-wrap"></div>
+          <div id="q-options" style="margin-top:14px"></div>
+        </section>
+        <section>
+          <label for="lang-select" id="lang-label">Language</label>
+          <select id="lang-select"></select>
+          <label for="answer" id="answer-label">Answer</label>
+          <div id="editor-host">
+            <textarea id="answer" spellcheck="false"></textarea>
+            <div id="editor-fallback-note" class="muted small">Plain editor (offline mode).</div>
+          </div>
+          <label for="stdin-input" id="stdin-label">Input (stdin) — one value per line, for the program to read</label>
+          <textarea id="stdin-input" rows="3" spellcheck="false" style="min-height:0;font-family:var(--mono);font-size:13px" placeholder="e.g.&#10;MADAM"></textarea>
+          <div style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap">
+            <button class="btn" id="run-btn" type="button" hidden>Run</button>
+            <button class="btn" id="save-btn" type="button">Save draft</button>
+            <button class="btn" id="hint-btn" type="button">Hint</button>
+            <button class="btn btn-primary" id="submit-btn" type="button">Submit</button>
+          </div>
+          <div id="output-panel" hidden style="margin-top:14px">
+            <div class="label muted small" style="text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px">Output</div>
+            <pre class="codeblock" id="output-pre" style="max-height:220px;overflow:auto;white-space:pre-wrap"></pre>
+          </div>
+          <div id="result" class="small" style="margin-top:14px"></div>
+        </section>
+      </div>
+    </div>
+  </main>
+
+  <dialog id="hint-dialog">
+    <h3>Use hint?</h3>
+    <p>Using this hint will reduce your score by <strong id="hint-penalty">0</strong> marks. Continue?</p>
+    <div style="display:flex;gap:8px;justify-content:flex-end">
+      <button class="btn" id="hint-cancel" type="button">Cancel</button>
+      <button class="btn btn-danger" id="hint-confirm" type="button">Use hint</button>
+    </div>
+  </dialog>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
+  <!-- Language modes for the editor (python, c, c++, java) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/python/python.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/clike/clike.min.js"></script>
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="/js/common.js"></script>
+  <script src="/js/timer-ui.js"></script>
+  <script src="/js/workspace.js"></script>
+</body>
+</html>
