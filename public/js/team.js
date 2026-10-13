@@ -118,25 +118,31 @@
   }
   function clearHoldScreen() { document.getElementById('hold-screen')?.remove(); }
 
-  const socket = io();
-  socket.on('phase', applyPhase);
-  socket.on('standings', () => load().catch(() => {}));
-  socket.on('team status', (d) => {
-    // Judge resumed/reinstated/disqualified this team while logged in.
-    if (d.reinstated || d.status === 'active') { clearHoldScreen(); location.reload(); return; }
-    showHoldScreen(d.status === 'stopped' ? 'stopped' : d.status === 'disqualified' ? 'disqualified' : 'eliminated');
-    load().catch(() => {});
-  });
-  socket.on('connect', () => load().catch(() => {}));
-  socket.on('connect_error', () => {
-    let s = document.getElementById('conn-status');
-    if (!s) { s = document.createElement('span'); s.id = 'conn-status'; s.className = 'badge badge-live'; document.querySelector('.topbar .statusline')?.prepend(s); }
-    s.textContent = 'Reconnecting…';
-  });
+  const socket = typeof io === 'function' ? io() : null;
+  if (socket) {
+    socket.on('phase', applyPhase);
+    socket.on('standings', () => load().catch(() => {}));
+    socket.on('team status', (d) => {
+      // Judge resumed/reinstated/disqualified this team while logged in.
+      if (d.reinstated || d.status === 'active') { clearHoldScreen(); location.reload(); return; }
+      showHoldScreen(d.status === 'stopped' ? 'stopped' : d.status === 'disqualified' ? 'disqualified' : 'eliminated');
+      load().catch(() => {});
+    });
+    socket.on('connect', () => load().catch(() => {}));
+    socket.on('connect_error', () => {
+      let s = document.getElementById('conn-status');
+      if (!s) { s = document.createElement('span'); s.id = 'conn-status'; s.className = 'badge badge-live'; document.querySelector('.topbar .statusline')?.prepend(s); }
+      s.textContent = 'Reconnecting…';
+    });
+  }
 
   csApi('/api/status').then(applyPhase).catch(() => {});
   load();
   setInterval(tick, 500);
+  setInterval(() => {
+    csApi('/api/status').then(applyPhase).catch(() => {});
+    load().catch(() => {});
+  }, 15000);
 
   // Tab-switch monitoring (report to server; server applies threshold)
   let hiddenAt = null;

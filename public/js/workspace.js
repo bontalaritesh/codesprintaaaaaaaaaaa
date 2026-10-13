@@ -84,7 +84,7 @@
     cm.setOption('mode', modes[lang] || 'text/x-csrc');
   }
 
-  let lockSocket = io();
+  let lockSocket = typeof io === 'function' ? io() : null;
 
   async function load() {
     let data;
@@ -427,16 +427,19 @@
     if (deadline) $('clock').textContent = csFmtClock(Math.max(0, deadline - Date.now()));
     else $('clock').textContent = new Date().toLocaleTimeString();
   }
-  const socket = io();
-  socket.on('phase', (p) => { deadline = Date.parse(p.deadline); tick(); });
-  lockSocket = socket;
-  socket.on('eliminated', () => { showEliminatedScreen(); });
-  socket.on('team status', (d) => {
-    showStatusScreen(d.status);
-    if (d.reinstated) { document.getElementById('elim-screen')?.remove(); document.getElementById('status-screen')?.remove(); location.reload(); }
-  });
+  const socket = typeof io === 'function' ? io() : null;
+  if (socket) {
+    socket.on('phase', (p) => { deadline = Date.parse(p.deadline); tick(); });
+    lockSocket = socket;
+    socket.on('eliminated', () => { showEliminatedScreen(); });
+    socket.on('team status', (d) => {
+      showStatusScreen(d.status);
+      if (d.reinstated) { document.getElementById('elim-screen')?.remove(); document.getElementById('status-screen')?.remove(); location.reload(); }
+    });
+  }
   csApi('/api/status').then((p) => { deadline = Date.parse(p.deadline); tick(); }).catch(() => {});
   setInterval(tick, 500);
+  setInterval(refreshTabState, 15000);
 
   load();
 })();

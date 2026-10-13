@@ -402,9 +402,11 @@
   function tick() {
     if (deadline) $('clock').textContent = csFmtClock(Math.max(0, deadline - Date.now()));
   }
-  const socket = io();
-  socket.on('phase', (p) => { deadline = Date.parse(p.deadline); applyPhase(p); tick(); });
-  socket.on('incident', () => { csToast('New incident reported', 'err'); load(); });
+  const socket = typeof io === 'function' ? io() : null;
+  if (socket) {
+    socket.on('phase', (p) => { deadline = Date.parse(p.deadline); applyPhase(p); tick(); });
+    socket.on('incident', () => { csToast('New incident reported', 'err'); load(); });
+  }
   setInterval(tick, 500);
   setInterval(load, 30000);
   load();
@@ -528,10 +530,13 @@
     cmd('duration', { minutes: mins, seconds: secs });
   };
 
-  const socket = io();
-  socket.on('round timer', apply);
-  socket.on('connect', () => refresh());      // restore authority after reconnection
-  socket.on('connect_error', () => { el.sync.textContent = 'offline — commands via HTTP still work when reconnected'; });
+  const socket = typeof io === 'function' ? io() : null;
+  if (socket) {
+    socket.on('round timer', apply);
+    socket.on('connect', () => refresh());      // restore authority after reconnection
+    socket.on('connect_error', () => { el.sync.textContent = 'offline — commands via HTTP still work when reconnected'; });
+  }
   refresh();
+  setInterval(refresh, 10000);
   setInterval(drawClock, 500); // local animation; server remains the authority
 })();

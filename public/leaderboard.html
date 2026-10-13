@@ -35,7 +35,7 @@
     </section>
   </main>
 
-  <script src="/socket.io/socket.io.js"></script>
+  <script src="/socket.io/socket.io.js" onerror="this.onerror=null;this.src='https://cdn.socket.io/4.8.1/socket.io.min.js'"></script>
   <script src="/js/common.js"></script>
   <script>
     'use strict';
@@ -56,12 +56,15 @@
     }
     async function load() { try { render(await csApi('/api/leaderboard')); } catch { /* ignore */ } }
     load();
-    const socket = io();
-    socket.on('standings', render);
-    socket.on('phase', (p) => {
-      $('phase-badge').textContent = p.phaseLabel;
-      $('phase-badge').className = 'badge' + (p.phase.startsWith('round') ? ' badge-live' : '');
-    });
+    const socket = typeof io === 'function' ? io() : null;
+    if (socket) {
+      socket.on('standings', render);
+      socket.on('phase', (p) => {
+        $('phase-badge').textContent = p.phaseLabel;
+        $('phase-badge').className = 'badge' + (p.phase.startsWith('round') ? ' badge-live' : '');
+      });
+    }
+    setInterval(load, 10000);
     csApi('/api/status').then((p) => { $('phase-badge').textContent = p.phaseLabel; }).catch(() => {});
   </script>
 </body>

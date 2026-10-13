@@ -7,13 +7,28 @@ const { DatabaseSync } = require('node:sqlite');
 const path = require('path');
 const fs = require('fs');
 
-const DB_PATH = process.env.CODESPRINT_DB || path.join(__dirname, 'codesprint.db');
+const defaultDbPath = process.env.VERCEL
+  ? path.join('/tmp', 'codesprint.db')
+  : path.join(__dirname, 'codesprint.db');
+
+const DB_PATH = process.env.CODESPRINT_DB || defaultDbPath;
 
 let db;
 
 function getDb() {
   if (db) return db;
-  fs.mkdirSync(path.dirname(DB_PATH), { recursive: true });
+  const dbDir = path.dirname(DB_PATH);
+  fs.mkdirSync(dbDir, { recursive: true });
+
+  const bundledDb = path.join(__dirname, 'codesprint.db');
+  if (process.env.VERCEL && DB_PATH !== bundledDb && !fs.existsSync(DB_PATH) && fs.existsSync(bundledDb)) {
+    try {
+      fs.copyFileSync(bundledDb, DB_PATH);
+    } catch {
+      // fallback to fresh db initialization
+    }
+  }
+
   db = new DatabaseSync(DB_PATH);
   db.exec('PRAGMA journal_mode = WAL;');
   db.exec('PRAGMA foreign_keys = ON;');
