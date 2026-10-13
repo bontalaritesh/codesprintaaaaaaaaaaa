@@ -11,7 +11,7 @@ const { Server } = require('socket.io');
 
 const { getDb } = require('./db');
 const auth = require('./auth');
-const { verifyPassword, hashPassword, STAGE_LABELS } = require('./seed');
+const { verifyPassword, hashPassword, STAGE_LABELS, seed } = require('./seed');
 const sched = require('./schedule');
 const { gradeAnswer } = require('./grading');
 const { scoreFor, standings, progressFor } = require('./scoring');
@@ -24,10 +24,20 @@ const server = http.createServer(app);
 const io = new Server(server, { cors: { origin: true, credentials: true } });
 
 app.disable('x-powered-by');
+app.set('trust proxy', 1); // behind Railway/Render/nginx: exposes req.secure for cookie hardening
 app.use(express.json({ limit: '256kb' }));
 app.use(auth.sessionMiddleware);
 
 const db = getDb();
+
+// First-boot bootstrap: provision the database idempotently (admin/judge
+// accounts, teams, question bank, default settings). A fresh database — e.g. a
+// new Railway volume — would otherwise contain zero accounts, making every
+// login fail with "Invalid credentials". Re-seeding on boot is safe: existing
+// accounts are never modified, and judge-edited questions are preserved.
+seed({
+  teams: Number(process.env.TEAMS) > 0 ? Number(process.env.TEAMS) : 36,
+});
 
 // ---------------------------------------------------------------- helpers
 function getDbForEdits() { return db; }
@@ -898,10 +908,6 @@ app.post('/api/judge/unfreeze', auth.requireRole('admin'), (req, res) => {
 });
 
 // ---------------------------------------------------------------- socket.io
-io.use((socket, next) => {
-  const cookies = auth.sessionMiddleware.length ? null : null; // placeholder, see below
-  next();
-});
 // Authenticated sockets: parse the session cookie from the handshake.
 io.use((socket, next) => {
   try {

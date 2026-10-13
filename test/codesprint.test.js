@@ -113,6 +113,79 @@ test('team login works and redirect differs from judge', async () => {
   assert.strictEqual(r.data.redirect, '/team');
 });
 
+test('valid admin credentials succeed; invalid admin password rejected', async () => {
+  const ok = await req('POST', '/api/login', { body: { username: 'admin', password: 'test-admin' }, as: 'adm' });
+  assert.strictEqual(ok.status, 200);
+  assert.strictEqual(ok.data.role, 'admin');
+  assert.strictEqual(ok.data.redirect, '/judge');
+  const bad = await req('POST', '/api/login', { body: { username: 'admin', password: 'wrong-password' } });
+  assert.strictEqual(bad.status, 401);
+  assert.strictEqual(bad.data.error, 'Invalid credentials');
+});
+
+test('valid judge credentials succeed; invalid judge password rejected', async () => {
+  const ok = await req('POST', '/api/login', { body: { username: 'judge', password: 'test-judge' }, as: 'jd' });
+  assert.strictEqual(ok.status, 200);
+  assert.strictEqual(ok.data.role, 'judge');
+  assert.strictEqual(ok.data.redirect, '/judge');
+  const bad = await req('POST', '/api/login', { body: { username: 'judge', password: 'wrong-password' } });
+  assert.strictEqual(bad.status, 401);
+  assert.strictEqual(bad.data.error, 'Invalid credentials');
+});
+
+test('login is case-insensitive and whitespace-tolerant on username; password stays exact', async () => {
+  const r = await req('POST', '/api/login', { body: { username: '  TEAM01 ', password: 'sprint01' } });
+  assert.strictEqual(r.status, 200);
+  const wrong = await req('POST', '/api/login', { body: { username: 'team01', password: ' sprint01 ' } });
+  assert.strictEqual(wrong.status, 401); // password whitespace is NOT tolerated
+});
+
+test('missing or malformed login fields rejected with 400 (no info leak)', async () => {
+  for (const body of [undefined, {}, { username: 'admin' }, { password: 'x' }, { username: 123, password: 'x' }, { username: '   ', password: 'x' }]) {
+    const r = await req('POST', '/api/login', { body });
+    assert.strictEqual(r.status, 400, JSON.stringify(body));
+    assert.ok(r.data && r.data.error, JSON.stringify(body));
+    assert.ok(!JSON.stringify(r.data).includes('password_hash'));
+  }
+});
+
+test('judge accounts cannot access admin-only operations', async () => {
+  const cases = [
+    ['POST', '/api/judge/accounts', { username: 'new-admin', password: 'x', role: 'admin' }],
+    ['POST', '/api/judge/freeze', { confirm: true }],
+    ['POST', '/api/judge/unfreeze', { reason: 'correction' }],
+  ];
+  for (const [m, p, body] of cases) {
+    const r = await req(m, p, { as: 'jd', body });
+    assert.strictEqual(r.status, 403, `${m} ${p} -> ${r.status}`);
+  }
+});
+
+test('logout invalidates the session server-side', async () => {
+  const login = await req('POST', '/api/login', { body: { username: 'team03', password: 'sprint03' }, as: 't3' });
+  assert.strictEqual(login.status, 200);
+  const me1 = await req('GET', '/api/me', { as: 't3' });
+  assert.strictEqual(me1.status, 200);
+  await req('POST', '/api/logout', { as: 't3' });
+  const me2 = await req('GET', '/api/me', { as: 't3' });
+  assert.strictEqual(me2.status, 401);
+  jars.t3 = null;
+});
+
+test('repeated and concurrent logins produce consistent state', async () => {
+  const a = await req('POST', '/api/login', { body: { username: 'team01', password: 'sprint01' }, as: 't4a' });
+  const b = await req('POST', '/api/login', { body: { username: 'team01', password: 'sprint01' }, as: 't4b' });
+  assert.strictEqual(a.status, 200);
+  assert.strictEqual(b.status, 200);
+  const meA = await req('GET', '/api/me', { as: 't4a' });
+  const meB = await req('GET', '/api/me', { as: 't4b' });
+  assert.strictEqual(meA.status, 200);
+  assert.strictEqual(meB.status, 200);
+  assert.strictEqual(meA.data.username, 'team01');
+  assert.strictEqual(meB.data.username, 'team01');
+  jars.t4a = null; jars.t4b = null;
+});
+
 test('teams cannot access judge/admin routes', async () => {
   const r = await req('GET', '/api/judge/overview', { as: 't1' });
   assert.strictEqual(r.status, 403);
@@ -146,6 +219,60 @@ test('expired sessions are rejected', async () => {
   const me2 = await req('GET', '/api/me', { as: 't2' });
   assert.strictEqual(me2.status, 401);
   jars.t2 = null;
+});
+
+// ---------------------------------------------------------------- first-boot bootstrap
+// Regression for the actual "Invalid credentials" root cause: server.js used to
+// seed nothing at startup, so a fresh database (e.g. a new Railway volume with
+// CODESPRINT_DB pointed at an empty file) had ZERO accounts and every login
+// returned 401. Booting the server must self-provision admin/judge/team
+// accounts, honoring ADMIN_PASSWORD / JUDGE_PASSWORD env vars.
+test('first boot on an empty database self-provisions admin/judge/team accounts', async () => {
+  const { spawn } = require('child_process');
+  const dbPath = path.join(os.tmpdir(), `cs-fresh-${process.pid}.db`);
+  for (const s of ['', '-wal', '-shm']) try { fs.rmSync(dbPath + s, { force: true }); } catch {}
+  // Windows reserves some port ranges (EACCES); try a few safe candidates.
+  const candidates = [33000, 33500, 34000].map((p) => p + (process.pid % 400));
+  const login = async (u, p) => {
+    const r = await fetch(`http://127.0.0.1:${currentPort}/api/login`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username: u, password: p }),
+    });
+    return r.status;
+  };
+  let currentPort = null, child = null, out = '';
+  const attach = (c) => { out = ''; c.stdout.on('data', (d) => { out += d; }); c.stderr.on('data', (d) => { out += d; }); };
+  try {
+    let healthy = false;
+    for (const port of candidates) {
+      currentPort = port;
+      child = spawn(process.execPath, [path.join(__dirname, '..', 'server.js')], {
+        env: { ...process.env, CODESPRINT_DB: dbPath, PORT: String(port), ADMIN_PASSWORD: 'boot-admin', JUDGE_PASSWORD: 'boot-judge' },
+        stdio: ['ignore', 'pipe', 'pipe'],
+      });
+      attach(child);
+      let exited = false;
+      child.on('exit', () => { exited = true; });
+      for (let i = 0; i < 32 && !healthy && !exited; i++) {
+        await new Promise((res) => setTimeout(res, 250));
+        try { healthy = (await fetch(`http://127.0.0.1:${port}/api/health`)).ok; } catch {}
+      }
+      if (healthy) break;
+      if (!exited) child.kill();
+      await new Promise((res) => setTimeout(res, 300));
+    }
+    assert.ok(healthy, 'server became healthy on a fresh database. Boot log:\n' + out);
+    assert.strictEqual(await login('admin', 'boot-admin'), 200, 'admin env-credential login');
+    assert.strictEqual(await login('admin', 'wrong-password'), 401, 'admin wrong password still rejected');
+    assert.strictEqual(await login('admin', 'admin123'), 401, 'default password NOT accepted when env password set');
+    assert.strictEqual(await login('judge', 'boot-judge'), 200, 'judge env-credential login');
+    assert.strictEqual(await login('judge', 'wrong-password'), 401, 'judge wrong password still rejected');
+    assert.strictEqual(await login('team01', 'sprint01'), 200, 'team account provisioned on fresh DB');
+  } finally {
+    child.kill();
+    await new Promise((res) => setTimeout(res, 400));
+    for (const s of ['', '-wal', '-shm']) try { fs.rmSync(dbPath + s, { force: true }); } catch {}
+  }
 });
 
 // ---------------------------------------------------------------- questions & import

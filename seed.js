@@ -241,8 +241,18 @@ function editsTable() {
   );`);
 }
 
-function seed({ teams = 36, adminPass, judgeUser = 'judge', judgePass } = {}) {
+/**
+ * Initial-credential priorities: explicit argument > ADMIN_PASSWORD / JUDGE_PASSWORD
+ * env var > legacy default. Applied only when CREATING the account — an existing
+ * account's password is never silently reset by a boot-time seed.
+ * Optional `updatePasswords` (CLI only) allows an explicit --admin-pass/--judge-pass
+ * to rotate existing credentials.
+ */
+function seed({ teams = 36, adminPass, judgeUser = 'judge', judgePass, updatePasswords = false } = {}) {
   const db = getDb();
+  adminPass = adminPass || process.env.ADMIN_PASSWORD || process.env.CODESPRINT_ADMIN_PASSWORD;
+  judgePass = judgePass || process.env.JUDGE_PASSWORD || process.env.CODESPRINT_JUDGE_PASSWORD;
+  judgeUser = judgeUser || process.env.JUDGE_USER || 'judge';
 
   // Rounds
   const insRound = db.prepare('INSERT INTO rounds (key, title, stage_keys) VALUES (?, ?, ?) ON CONFLICT(key) DO UPDATE SET title=excluded.title, stage_keys=excluded.stage_keys');
@@ -321,26 +331,39 @@ function seed({ teams = 36, adminPass, judgeUser = 'judge', judgePass } = {}) {
   addQuestions('round2', ROUND2, 'code');
   addQuestions('round3', ROUND3, 'code');
 
-  // Accounts
+  // Accounts — created once with hashed passwords. The plaintext password is
+  // never persisted (older builds stored bootstrap passwords in the settings
+  // table in plaintext; those rows are purged below).
   const adminUser = 'admin';
   const hasAdmin = db.prepare('SELECT id FROM accounts WHERE username = ?').get(adminUser);
-  const finalAdminPass = adminPass || getSetting('bootstrap.admin_password') || 'admin123';
+  const finalAdminPass = adminPass || 'admin123';
   if (!hasAdmin) {
     db.prepare('INSERT INTO accounts (username, password_hash, role) VALUES (?, ?, ?)')
       .run(adminUser, hashPassword(finalAdminPass), 'admin');
-    setSetting('bootstrap.admin_password', finalAdminPass);
-  } else if (adminPass) {
+    if (!adminPass) {
+      console.warn('WARNING: admin account created with the DEFAULT password. Set the ADMIN_PASSWORD env var (or run: node seed.js --admin-pass <pw>) before the event.');
+    }
+  } else if (adminPass && updatePasswords) {
     db.prepare('UPDATE accounts SET password_hash = ? WHERE username = ?')
       .run(hashPassword(adminPass), adminUser);
   }
 
   const hasJudge = db.prepare('SELECT id FROM accounts WHERE username = ?').get(judgeUser);
-  const finalJudgePass = judgePass || getSetting('bootstrap.judge_password') || 'judge123';
+  const finalJudgePass = judgePass || 'judge123';
   if (!hasJudge) {
     db.prepare('INSERT INTO accounts (username, password_hash, role) VALUES (?, ?, ?)')
       .run(judgeUser, hashPassword(finalJudgePass), 'judge');
-    setSetting('bootstrap.judge_password', finalJudgePass);
+    if (!judgePass) {
+      console.warn('WARNING: judge account created with the DEFAULT password. Set the JUDGE_PASSWORD env var (or run: node seed.js --judge-pass <pw>) before the event.');
+    }
+  } else if (judgePass && updatePasswords) {
+    db.prepare('UPDATE accounts SET password_hash = ? WHERE username = ?')
+      .run(hashPassword(judgePass), judgeUser);
   }
+
+  // Security hygiene: purge plaintext bootstrap passwords persisted by older builds.
+  const purged = db.prepare("DELETE FROM settings WHERE key IN ('bootstrap.admin_password','bootstrap.judge_password')").run();
+  if (purged.changes) console.log(`  Removed ${purged.changes} legacy plaintext bootstrap-password setting(s); credentials live only as scrypt hashes now.`);
 
   // Teams: team01..teamNN, password = team password (default: sprint + number)
   const teamIns = db.prepare('INSERT INTO accounts (username, password_hash, role, team_name) VALUES (?, ?, ?, ?)');
@@ -379,10 +402,11 @@ if (require.main === module) {
     return i >= 0 ? args[i + 1] : undefined;
   };
   seed({
-    teams: Number(getArg('--teams') || 36),
+    teams: Number(getArg('--teams') || process.env.TEAMS || 36),
     adminPass: getArg('--admin-pass'),
     judgeUser: getArg('--judge-user') || 'judge',
     judgePass: getArg('--judge-pass'),
+    updatePasswords: getArg('--admin-pass') !== undefined || getArg('--judge-pass') !== undefined,
   });
 }
 

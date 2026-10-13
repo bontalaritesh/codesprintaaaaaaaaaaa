@@ -9,21 +9,38 @@ Built for ~36 teams on a college LAN, run from a single laptop.
 ```
 cd codesprint
 npm install
-node seed.js --admin-pass CHANGE_ME_admin --judge-pass CHANGE_ME_judge --teams 36
 npm start
 ```
+
+`npm start` self-provisions the database at first boot (idempotent admin/judge
+teams/question-bank seed) — a fresh, empty database gets accounts created
+automatically, so logins work immediately. To seed or rotate credentials
+explicitly before that: `node seed.js --admin-pass CHANGE_ME_admin --judge-pass
+CHANGE_ME_judge --teams 36`.
 
 Open `http://localhost:3000`. For LAN access, use the host machine's IP:
 `http://<host-ip>:3000` (allow port 3000 through Windows Firewall when prompted,
 or: `netsh advfirewall firewall add rule name="CodeSprint" dir=in action=allow protocol=TCP localport=3000`).
 
-## Default accounts
+## Default accounts & credential configuration
 
-| Role   | Username  | Password (provisioned)          |
-|--------|-----------|---------------------------------|
-| Admin  | `admin`   | value of `--admin-pass` (default `admin123` — CHANGE IT) |
-| Judge  | `judge`   | value of `--judge-pass` (default `judge123` — CHANGE IT) |
-| Teams  | `team01`…`team36` | `sprint01`…`sprint36` — **change before the event** |
+| Role   | Username  | Password source |
+|--------|-----------|-----------------|
+| Admin  | `admin`   | `ADMIN_PASSWORD` env var → or `--admin-pass` at seed → or `admin123` default (**CHANGE IT**) |
+| Judge  | `judge` (or `JUDGE_USER`) | `JUDGE_PASSWORD` env var → or `--judge-pass` at seed → or `judge123` default (**CHANGE IT**) |
+| Teams  | `team01`…`team36` (override count with `TEAMS`) | `sprint01`…`sprint36` — **change before the event** |
+
+Env-var passwords apply only when the account is created — an existing account
+is never silently reset by rebooting. Passwords are stored only as scrypt
+hashes (plaintext credentials are never persisted; seeds from older builds are
+purged on the next boot). Login usernames are case-insensitive and
+whitespace-tolerant; passwords are exact.
+
+To rotate credentials:
+
+```
+node seed.js --admin-pass NEW_ADMIN_PASS --judge-pass NEW_JUDGE_PASS   # explicit rotation (server stopped)
+```
 
 **Provisioning teams:** `node seed.js --teams N` creates `team01..teamNN`
 (idempotent — existing accounts are never modified or duplicated). To give a
@@ -100,13 +117,16 @@ request.
 npm test
 ```
 
-19 automated tests covering: unauthenticated access blocked, uniform credential
-errors, role separation (team→judge APIs = 403), score forging blocked, expired
-sessions rejected, idempotent import, answer/hint key non-leakage, phase
+31 automated tests covering: unauthenticated access blocked, admin and judge
+login checks (valid + invalid), uniform credential errors, malformed login
+payloads, case/whitespace-tolerant login, role separation
+(team→judge APIs = 403; judge→admin-only APIs = 403), logout session
+invalidation, repeated login state, score forging blocked, expired sessions
+rejected, idempotent import, answer/hint key non-leakage, phase
 locking (lunch + finished), duplicate submission protection, server-side hint
 penalties, leaderboard ordering, frozen results immutability, unfreeze reason
-requirement, draft isolation between teams, 3-tab-switch elimination + judge
-reinstate, answer-key spot checks, SQL-injection-resistant login.
+requirement, draft isolation between teams, 3-tab-switch elimination + judgeeinstate, answer-key spot checks, SQL-injection-resistant login, first-boot
+self-provisioning on an empty database.
 
 ## Starting the competition anytime (host controls)
 
@@ -137,11 +157,13 @@ for the API): no WebSockets + no persistent filesystem.
 | **Fly.io** | ★★★ | Very good fit (real VMs + volumes) but more CLI-heavy. |
 | **LAN laptop** (current design) | ★★★★★ for the event day | Zero cost, zero latency for participants, gcc/python already installed, fullscreen/tab monitoring most reliable on school LAN. |
 
-Deploy checklist: set a strong `--admin-pass`/`--judge-pass` at seed, switch to
-`better-sqlite3`+Docker if you need gcc inside a container, and back up
-`codesprint.db` (`npm run backup`) before/after the event.
+Deploy checklist: the server self-provisions at first boot — set `ADMIN_PASSWORD`
+and `JUDGE_PASSWORD` env vars (or rotate via `node seed.js --admin-pass …`
+off-line) for real credentials, mount the volume at `/data` with
+`CODESPRINT_DB=/data/codesprint.db`, and back up `codesprint.db`
+(`npm run backup`) before/after the event.
 
-18 automated tests covering: unauthenticated access blocked, uniform credential
+31 automated tests covering: unauthenticated access blocked, uniform credential
 errors, role separation (team→judge APIs = 403), score forging blocked, expired
 sessions rejected, idempotent import, answer/hint key non-leakage, phase
 locking (lunch + finished), duplicate submission protection, server-side hint

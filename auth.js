@@ -75,21 +75,29 @@ function login(req, res) {
   if (!username || !password || typeof username !== 'string' || typeof password !== 'string') {
     return res.status(400).json({ error: 'Team ID / username and password are required' });
   }
+  const uname = username.trim();
+  if (!uname) {
+    return res.status(400).json({ error: 'Team ID / username and password are required' });
+  }
   const db = getDb();
-  const acc = db.prepare('SELECT id, username, password_hash, role, team_name FROM accounts WHERE username = ?').get(username.trim());
+  // Case-insensitive + whitespace-tolerant lookup: participants routinely type
+  // "TEAM01" or "Team 01";  passwords stay exact (never trimmed).
+  const acc = db.prepare('SELECT id, username, password_hash, role, team_name FROM accounts WHERE username = ? COLLATE NOCASE').get(uname);
   // Uniform error: never reveal whether the username exists.
   if (!acc || !verifyPassword(password, acc.password_hash)) {
     return res.status(401).json({ error: 'Invalid credentials' });
   }
   const { token, expires } = createSession(acc.id);
+  const secure = req.secure ? '; Secure' : ''; // set when running behind an HTTPS proxy (trust proxy)
   res.setHeader('Set-Cookie',
-    `${SESSION_COOKIE}=${token}; HttpOnly; Path=/; SameSite=Lax; Expires=${new Date(expires).toUTCString()}`);
+    `${SESSION_COOKIE}=${token}; HttpOnly; Path=/; SameSite=Lax${secure}; Expires=${new Date(expires).toUTCString()}`);
   res.json({ ok: true, role: acc.role, username: acc.username, teamName: acc.team_name, redirect: acc.role === 'team' ? '/team' : '/judge' });
 }
 
 function logout(req, res) {
   destroySession(req.sessionToken);
-  res.setHeader('Set-Cookie', `${SESSION_COOKIE}=; HttpOnly; Path=/; SameSite=Lax; Max-Age=0`);
+  const secure = req.secure ? '; Secure' : '';
+  res.setHeader('Set-Cookie', `${SESSION_COOKIE}=; HttpOnly; Path=/; SameSite=Lax${secure}; Max-Age=0`);
   res.json({ ok: true });
 }
 
